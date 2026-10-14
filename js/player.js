@@ -74,6 +74,28 @@ function updatePlayer(level, keys) {
 }
 
 function drawPlayer(ctx) {
+  if (invincibleTimer > 0 && Math.floor(invincibleTimer / 6) % 2 === 0) return;
   ctx.fillStyle = "#e8e8f0";
   ctx.fillRect(player.x, player.y, player.w, player.h);
+}
+let lives = 3;
+let invincibleTimer = 0; // frames de invulnerabilidad tras recibir daño
+
+function resetLives() {
+  lives = 3;
+  invincibleTimer = 0;
+}
+
+// Devuelve true si el jugador se quedó sin vidas
+function hurtPlayer(level) {
+  if (invincibleTimer > 0) return false;
+  lives--;
+  invincibleTimer = 90; // ~1.5 segundos
+  if (lives <= 0) return true;
+  resetPlayer(level);   // vuelve al inicio del nivel
+  return false;
+}
+
+function updateInvincibility() {
+  if (invincibleTimer > 0) invincibleTimer--;
 }
