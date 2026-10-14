@@ -1,0 +1,14 @@
+body {
+  margin: 0;
+  background: #0d0b14;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+canvas {
+  background: #1a1628;
+  border: 4px solid #4a3f6b;
+  max-width: 100%;
+}
