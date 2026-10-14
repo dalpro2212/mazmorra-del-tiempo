@@ -243,3 +243,17 @@ function drawHero(ctx, p, tick) {
 
   ctx.restore();
 }
+
+// ---------- Monedas ----------
+function drawCoin(ctx, c, tick) {
+  const w = Math.abs(Math.cos(tick * 0.08 + c.x)) * 7 + 1;   // simula que gira
+  const y = c.y + Math.sin(tick * 0.06 + c.x) * 3;           // flota
+  ctx.fillStyle = "#f4c95d";
+  ctx.beginPath();
+  ctx.ellipse(c.x, y, w, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#fff3b0";
+  ctx.beginPath();
+  ctx.ellipse(c.x, y, w * 0.45, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
