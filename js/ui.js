@@ -1,6 +1,6 @@
 // Interfaz: HUD, menú principal, Game Over y victoria.
 
-function drawHUD(ctx, level, lives) {
+function drawHUD(ctx, level, lives, score, best) {
   ctx.textAlign = "left";
   ctx.fillStyle = "#fff";
   ctx.font = "18px monospace";
@@ -9,6 +9,10 @@ function drawHUD(ctx, level, lives) {
   ctx.fillStyle = "#e0505a";
   ctx.font = "22px monospace";
   ctx.fillText("♥".repeat(Math.max(lives, 0)), 640, 28);
+
+  ctx.fillStyle = "#f4c95d";
+  ctx.font = "16px monospace";
+  ctx.fillText("★ " + score + "   Récord: " + best, 560, 52);
 
   ctx.fillStyle = "rgba(255,255,255,0.5)";
   ctx.font = "12px monospace";
