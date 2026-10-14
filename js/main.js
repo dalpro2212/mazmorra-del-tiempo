@@ -4,7 +4,8 @@ const ctx = canvas.getContext("2d");
 const game = {
   state: "playing",      // menu | playing | gameover | victory
   levelIndex: 0,
-  keys: {}
+  keys: {},
+  tick:0
 };
 
 // Teclado
@@ -17,7 +18,34 @@ function currentLevel() {
 function startLevel() {
   resetPlayer(currentLevel());
 }
+// ¿El pincho está activo? Si tiene "blink", alterna cada ese número de frames.
+function spikeActive(s) {
+  if (!s.blink) return true;
+  return Math.floor(game.tick / s.blink) % 2 === 0;
+}
 
+// Hitbox más pequeña que el dibujo, para que sea justo
+function spikeHitbox(s) {
+  return { x: s.x + 5, y: s.y + 8, w: s.w - 10, h: s.h - 8 };
+}
+
+function drawSpike(s) {
+  const tooth = 20;
+  const count = Math.max(1, Math.floor(s.w / tooth));
+  const toothW = s.w / count;
+  const active = spikeActive(s);
+
+  ctx.fillStyle = active ? "#d9534f" : "rgba(217,83,79,0.2)";
+  for (let i = 0; i < count; i++) {
+    const x = s.x + i * toothW;
+    ctx.beginPath();
+    ctx.moveTo(x, s.y + s.h);
+    ctx.lineTo(x + toothW / 2, active ? s.y : s.y + s.h - 5);
+    ctx.lineTo(x + toothW, s.y + s.h);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
 function update() {
   if (game.state === "gameover") {
     if (game.keys["Enter"]) restartGame();
@@ -29,12 +57,14 @@ function update() {
   updatePlayer(level, game.keys);
   updateInvincibility();
 
+  game.tick++;
+
   // Pinchos
   for (const s of level.spikes) {
-    if (rectsOverlap(player, s)) {
-      if (hurtPlayer(level)) game.state = "gameover";
-    }
+  if (spikeActive(s) && rectsOverlap(player, spikeHitbox(s))) {
+    if (hurtPlayer(level)) game.state = "gameover";
   }
+}
 
   // Caída al vacío
   if (player.y > canvas.height + 100) {
@@ -66,9 +96,9 @@ function restartGame() {
 function drawLevel(level) {
   // Plataformas
   ctx.fillStyle = "#6b5b95";
-  for (const p of level.platforms) {
-    ctx.fillRect(p.x, p.y, p.w, p.h);
-  }
+  for (const s of level.spikes) {
+  drawSpike(s);
+}
   ctx.fillStyle = "#d9534f";
 for (const s of level.spikes) {
   ctx.fillRect(s.x, s.y, s.w, s.h);

@@ -7,8 +7,8 @@ LEVELS[1] = {
     { x: 0, y: 400, w: 800, h: 50 }
   ],
   spikes: [
-  { x: 300, y: 380, w: 60, h: 20 },
-  { x: 500, y: 380, w: 60, h: 20 }
+  { x: 300, y: 380, w: 60, h: 20 },               // fijo
+  { x: 500, y: 380, w: 80, h: 20, blink: 90 }     // sale y se esconde (~1.5 s)
 ],
 platforms: [
   { x: 0, y: 400, w: 800, h: 50 },
