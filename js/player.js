@@ -10,7 +10,8 @@ const player = {
   h: 44,
   vx: 0,
   vy: 0,
-  onGround: false
+  onGround: false,
+  facing: 1
 };
 
 function resetPlayer(level) {
@@ -39,6 +40,8 @@ function updatePlayer(level, keys) {
   if ((keys["ArrowUp"] || keys["KeyW"] || keys["Space"]) && player.onGround) {
     player.vy = JUMP_FORCE;
     player.onGround = false;
+    if (player.vx > 0) player.facing = 1;
+if (player.vx < 0) player.facing = -1;
   }
 
   // Gravedad
@@ -70,13 +73,13 @@ function updatePlayer(level, keys) {
 
   // No salirse de los lados de la pantalla
   if (player.x < 0) player.x = 0;
-  if (player.x + player.w > 800) player.x = 800 - player.w;
+  const levelW = level.width || 800;
+if (player.x + player.w > levelW) player.x = levelW - player.w;
 }
 
 function drawPlayer(ctx) {
   if (invincibleTimer > 0 && Math.floor(invincibleTimer / 6) % 2 === 0) return;
-  ctx.fillStyle = "#e8e8f0";
-  ctx.fillRect(player.x, player.y, player.w, player.h);
+  drawHero(ctx, player, game.tick);
 }
 let lives = 3;
 let invincibleTimer = 0; // frames de invulnerabilidad tras recibir daño

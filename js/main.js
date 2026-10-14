@@ -2,11 +2,29 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const game = {
-  state: "playing",      // menu | playing | gameover | victory
+  state: "menu",      // menu | playing | gameover | victory
   levelIndex: 0,
   keys: {},
-  tick:0
+  pressed: {},        // teclas presionadas en este frame (una sola vez)
+  tick: 0
 };
+
+window.addEventListener("keydown", (e) => {
+  if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) {
+    e.preventDefault();   // evita que la página haga scroll
+  }
+  if (!e.repeat) game.pressed[e.code] = true;
+  game.keys[e.code] = true;
+});
+window.addEventListener("keyup", (e) => { game.keys[e.code] = false; });
+const camera = { x: 0 };
+
+function updateCamera(level) {
+  const levelW = level.width || 800;
+  const target = player.x + player.w / 2 - canvas.width / 2;
+  camera.x += (target - camera.x) * 0.12;   // movimiento suave
+  camera.x = Math.max(0, Math.min(camera.x, levelW - canvas.width));
+}
 
 // Teclado
 window.addEventListener("keydown", (e) => { game.keys[e.code] = true; });
@@ -17,6 +35,7 @@ function currentLevel() {
 }
 function startLevel() {
   resetPlayer(currentLevel());
+  camera.x = 0;
 }
 // ¿El pincho está activo? Si tiene "blink", alterna cada ese número de frames.
 function spikeActive(s) {
@@ -47,34 +66,59 @@ function drawSpike(s) {
   }
 }
 function update() {
-  if (game.state === "gameover") {
-    if (game.keys["Enter"]) restartGame();
+  game.tick++;
+  updateBats();
+
+  if (game.state === "menu") {
+    if (game.pressed["Enter"]) restartGame();
     return;
   }
-  if (game.state !== "playing") return;
+  if (game.state === "gameover") {
+    if (game.pressed["Enter"]) restartGame();
+    if (game.pressed["Escape"]) goToMenu();
+    return;
+  }
+  if (game.state === "victory") {
+    if (game.pressed["Enter"]) goToMenu();
+    return;
+  }
+
+  // --- state === "playing" ---
+  if (game.pressed["KeyR"]) { restartGame(); return; }
+  if (game.pressed["Escape"]) { goToMenu(); return; }
 
   const level = currentLevel();
   updatePlayer(level, game.keys);
+  updateCamera(level);
   updateInvincibility();
 
-  game.tick++;
-
-  // Pinchos
   for (const s of level.spikes) {
-  if (spikeActive(s) && rectsOverlap(player, spikeHitbox(s))) {
-    if (hurtPlayer(level)) game.state = "gameover";
+    if (spikeActive(s) && rectsOverlap(player, spikeHitbox(s))) {
+      if (hurtPlayer(level)) game.state = "gameover";
+    }
   }
-}
 
-  // Caída al vacío
   if (player.y > canvas.height + 100) {
     if (hurtPlayer(level)) game.state = "gameover";
   }
 
-  // Puerta de salida
   if (rectsOverlap(player, level.exit)) {
     nextLevel();
   }
+}
+
+function restartGame() {
+  game.levelIndex = 0;
+  game.state = "playing";
+  resetLives();
+  startLevel();
+}
+
+function goToMenu() {
+  game.state = "menu";
+  game.levelIndex = 0;
+  resetLives();
+  startLevel();
 }
 
 function nextLevel() {
@@ -86,65 +130,44 @@ function nextLevel() {
   }
 }
 
-function restartGame() {
-  game.levelIndex = 0;
-  game.state = "playing";
-  resetLives();
-  startLevel();
-}
-
 function drawLevel(level) {
-  // Plataformas
-  ctx.fillStyle = "#6b5b95";
+  for (const p of level.platforms) {
+    drawPlatform(ctx, p);
+  }
   for (const s of level.spikes) {
-  drawSpike(s);
-}
-  ctx.fillStyle = "#d9534f";
-for (const s of level.spikes) {
-  ctx.fillRect(s.x, s.y, s.w, s.h);
-}
-  drawPlayer(ctx);
-  // Puerta de salida
-  ctx.fillStyle = "#f4c95d";
-  const e = level.exit;
-  ctx.fillRect(e.x, e.y, e.w, e.h);
+    drawSpike(s);
+  }
+  drawDoor(ctx, level.exit, game.tick);
 }
 
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBackground(ctx, game.tick, camera.x);
+  drawBats(ctx, game.tick);
+
+  if (game.state === "menu") {
+    drawMenu(ctx, game.tick);
+    return;
+  }
+
   const level = currentLevel();
+  ctx.save();
+  ctx.translate(-Math.round(camera.x), 0);
   drawLevel(level);
   drawPlayer(ctx);
+  ctx.restore();
 
-  ctx.fillStyle = "#fff";
-  ctx.font = "20px monospace";
-  ctx.fillText(level.name, 20, 30);
-  ctx.fillText("Vidas: " + lives, 660, 30);
+  drawHUD(ctx, level, lives);
 
-  if (game.state === "gameover") {
-    ctx.fillStyle = "rgba(0,0,0,0.7)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#fff";
-    ctx.font = "40px monospace";
-    ctx.fillText("GAME OVER", 270, 210);
-    ctx.font = "20px monospace";
-    ctx.fillText("Presiona Enter para reiniciar", 230, 250);
-  }
-
-  if (game.state === "victory") {
-    ctx.fillStyle = "rgba(0,0,0,0.7)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#f4c95d";
-    ctx.font = "40px monospace";
-    ctx.fillText("¡VICTORIA!", 280, 220);
-  }
+  if (game.state === "gameover") drawGameOver(ctx);
+  if (game.state === "victory") drawVictory(ctx);
 }
 
 function loop() {
   update();
   draw();
+  game.pressed = {};   // limpia las teclas de un solo toque
   requestAnimationFrame(loop);
 }
-
+initBats();
 startLevel();
 loop();
