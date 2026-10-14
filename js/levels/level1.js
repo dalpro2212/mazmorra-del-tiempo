@@ -6,8 +6,9 @@ LEVELS[0] = {
   name: "Nivel 1 - El Despertar",
   start: { x: 50, y: 300 },
   platforms: [
-    { x: 0, y: 400, w: 800, h: 50 }   // suelo
-  ],
+  { x: 0, y: 400, w: 800, h: 50 },   // suelo
+  { x: 300, y: 320, w: 120, h: 20 }  // plataforma de prueba
+],
   spikes: [],
   exit: { x: 730, y: 340, w: 40, h: 60 }
 };

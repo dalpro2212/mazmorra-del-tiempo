@@ -14,9 +14,12 @@ window.addEventListener("keyup",   (e) => { game.keys[e.code] = false; });
 function currentLevel() {
   return LEVELS[game.levelIndex];
 }
+function startLevel() {
+  resetPlayer(currentLevel());
+}
 
 function update() {
-  // Aquí se actualizará el jugador, trampas, etc.
+  updatePlayer(currentLevel(), game.keys);
 }
 
 function drawLevel(level) {
@@ -25,6 +28,7 @@ function drawLevel(level) {
   for (const p of level.platforms) {
     ctx.fillRect(p.x, p.y, p.w, p.h);
   }
+  drawPlayer(ctx);
   // Puerta de salida
   ctx.fillStyle = "#f4c95d";
   const e = level.exit;
@@ -47,4 +51,5 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
+startLevel();
 loop();
