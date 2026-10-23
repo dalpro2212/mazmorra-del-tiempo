@@ -1,0 +1,33 @@
+{
+  "name": "mazmorra-del-tiempo",
+  "version": "1.0.0",
+  "description": "Videojuego de plataformas 2D",
+  "author": "dalpro2212",
+  "main": "electron-main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.dalpro2212.mazmorra",
+    "productName": "La Mazmorra del Tiempo",
+    "files": [
+      "index.html",
+      "css/**/*",
+      "js/**/*",
+      "electron-main.js"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.15.3"
+  }
+}

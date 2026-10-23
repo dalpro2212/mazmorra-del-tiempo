@@ -12,3 +12,5 @@ node_modules/
 *.tmp
 .cache/
 .env
+node_modules/
+dist/
